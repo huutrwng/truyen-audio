@@ -6,6 +6,7 @@ import os
 import logging
 from pathlib import Path
 from typing import Optional, List
+import aiohttp
 from huggingface_hub import HfApi, CommitOperationAdd
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,39 @@ CDN_BASE_URL = f"https://huggingface.co/datasets/{REPO_ID}/resolve/main/audio"
 def get_cloud_audio_url(filename: str) -> str:
     """Tra ve URL public truc tiep de stream audio tu CDN."""
     return f"{CDN_BASE_URL}/{filename}"
+
+async def download_cloud_audio(filename: str, target_path: Path) -> bool:
+    """Tải file audio từ Cloud Storage về cache cục bộ của server."""
+    cloud_url = get_cloud_audio_url(filename)
+    tmp_path = target_path.with_suffix(".tmp")
+    try:
+        timeout = aiohttp.ClientTimeout(total=45)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(cloud_url) as resp:
+                if resp.status != 200:
+                    logger.warning(f"Cloud Storage trả về status {resp.status} cho {filename}")
+                    return False
+                
+                with open(tmp_path, "wb") as f:
+                    while True:
+                        chunk = await resp.content.read(65536)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                
+                if tmp_path.exists() and tmp_path.stat().st_size > 1000:
+                    tmp_path.replace(target_path)
+                    logger.info(f"✓ Đã tải {filename} từ Cloud về cache server ({target_path.stat().st_size // 1024} KB)")
+                    return True
+                return False
+    except Exception as e:
+        logger.error(f"Lỗi tải audio {filename} từ Cloud: {e}")
+        if tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except Exception:
+                pass
+        return False
 
 def upload_single_audio(local_file_path: Path, filename: Optional[str] = None) -> bool:
     """Upload mot file mp3 don le len cloud storage."""

@@ -170,14 +170,18 @@ app.add_middleware(
 )
 
 # ─── Static Files & Audio Serving ──────────────────────────────────────────
+download_locks: dict[str, asyncio.Lock] = {}
+
 @app.api_route("/audio/{filename}", methods=["GET", "HEAD"])
 async def serve_audio_file(filename: str):
     """
-    Phát file audio:
+    Phát file audio (Zero-Redirect, Full Range Seeking, Same-Origin Streaming):
     - Nếu file có trên ổ cứng server (chạy local trên PC): Stream trực tiếp từ file local.
-    - Nếu chạy trên Cloud (Render, Docker, không có file cục bộ): Tự động redirect 307 sang Hugging Face CDN (Cloudflare CDN toàn cầu, hỗ trợ tua/seek).
+    - Nếu chạy trên Cloud (Render, Docker): Server tự động tải từ Cloud Storage về cache cục bộ rồi phát trực tiếp, loại bỏ hoàn toàn lỗi CORS / CSP sandbox của trình duyệt di động!
     """
     local_file = AUDIO_DIR / filename
+    
+    # 1. Nếu file đã có trong cache server -> Phục vụ ngay lập tức
     if local_file.exists() and local_file.is_file() and local_file.stat().st_size > 1000:
         return FileResponse(
             str(local_file),
@@ -185,9 +189,22 @@ async def serve_audio_file(filename: str):
             content_disposition_type="inline"
         )
     
-    # Cloud Storage CDN fallback (Hugging Face Dataset CDN)
-    cloud_url = cloud_storage.get_cloud_audio_url(filename)
-    return RedirectResponse(url=cloud_url, status_code=307)
+    # 2. Nếu chưa có trong cache server: Đồng bộ từ Cloud Storage về cache
+    if filename not in download_locks:
+        download_locks[filename] = asyncio.Lock()
+        
+    async with download_locks[filename]:
+        if not (local_file.exists() and local_file.is_file() and local_file.stat().st_size > 1000):
+            logger.info(f"Đang đồng bộ {filename} từ Cloud Storage về cache server...")
+            success = await cloud_storage.download_cloud_audio(filename, local_file)
+            if not success or not local_file.exists():
+                raise HTTPException(status_code=404, detail=f"Audio {filename} chưa có trên hệ thống hoặc đang được xử lý")
+    
+    return FileResponse(
+        str(local_file),
+        media_type="audio/mpeg",
+        content_disposition_type="inline"
+    )
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
