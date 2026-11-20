@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.log
+cloudflared.exe
+*.mp3
+!audio/chapter_094[0-9].mp3
+!audio/chapter_095[0-5].mp3
+test_*.py
+debug_*
+chunk*
+isolate_para.py
+pinpoint_s.py
+find_*
+bench_*

@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.github
+*.log
+cloudflared.exe
+chunk*.txt
+chunk*.mp3
+debug_*
+test_*
+temp_*
