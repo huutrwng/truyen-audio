@@ -1179,6 +1179,20 @@ function setupAudioEvents() {
     }
   });
 
+  audio.addEventListener('error', () => {
+    updatePlayStateUI(false);
+    const err = audio.error;
+    let detail = 'Không thể tải file audio';
+    if (err) {
+      if (err.code === 4 || err.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+        detail = `File audio Chương ${currentPlayingNum || ''} chưa có trên máy chủ hoặc đang được đồng bộ lên Cloud.`;
+      } else if (err.code === MediaError.MEDIA_ERR_NETWORK) {
+        detail = 'Mạng bị gián đoạn khi tải audio. Vui lòng kiểm tra lại kết nối!';
+      }
+    }
+    showToast(`⚠️ ${detail}`, 4500);
+  });
+
   document.getElementById('fullSeekBar').addEventListener('input', (e) => {
     if (audio.duration) {
       audio.currentTime = (e.target.value / 100) * audio.duration;

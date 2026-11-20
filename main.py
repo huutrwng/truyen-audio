@@ -18,13 +18,14 @@ if sys.platform.startswith('win'):
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 import database as db
 import scraper
 import tts_converter
+import cloud_storage
 
 # ─── Logging ─────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -98,6 +99,8 @@ async def conversion_worker():
             if success and os.path.exists(audio_path) and os.path.getsize(audio_path) > 1000:
                 await db.update_audio_status(chapter_num, 'done', f"audio/{audio_filename}", voice)
                 logger.info(f"✓ Chapter {chapter_num} converted successfully ({os.path.getsize(audio_path)//1024}KB)")
+                # Asynchronously upload to Cloud Storage in background
+                asyncio.create_task(asyncio.to_thread(cloud_storage.upload_single_audio, Path(audio_path), audio_filename))
             else:
                 await db.update_audio_status(chapter_num, 'error')
                 logger.error(f"✗ Chapter {chapter_num} conversion failed")
@@ -166,8 +169,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Static Files ─────────────────────────────────────────────────────────────
-app.mount("/audio", StaticFiles(directory=str(AUDIO_DIR)), name="audio")
+# ─── Static Files & Audio Serving ──────────────────────────────────────────
+@app.api_route("/audio/{filename}", methods=["GET", "HEAD"])
+async def serve_audio_file(filename: str):
+    """
+    Phát file audio:
+    - Nếu file có trên ổ cứng server (chạy local trên PC): Stream trực tiếp từ file local.
+    - Nếu chạy trên Cloud (Render, Docker, không có file cục bộ): Tự động redirect 307 sang Hugging Face CDN (Cloudflare CDN toàn cầu, hỗ trợ tua/seek).
+    """
+    local_file = AUDIO_DIR / filename
+    if local_file.exists() and local_file.is_file() and local_file.stat().st_size > 1000:
+        return FileResponse(
+            str(local_file),
+            media_type="audio/mpeg",
+            content_disposition_type="inline"
+        )
+    
+    # Cloud Storage CDN fallback (Hugging Face Dataset CDN)
+    cloud_url = cloud_storage.get_cloud_audio_url(filename)
+    return RedirectResponse(url=cloud_url, status_code=307)
+
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # ─── Models ───────────────────────────────────────────────────────────────────

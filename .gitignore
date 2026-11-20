@@ -2,6 +2,10 @@ __pycache__/
 *.pyc
 *.log
 cloudflared.exe
+hf_token.txt
+.env
+data/*.db-wal
+data/*.db-shm
 *.mp3
 !audio/chapter_094[0-9].mp3
 !audio/chapter_095[0-5].mp3

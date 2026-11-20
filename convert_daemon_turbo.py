@@ -214,6 +214,12 @@ async def convert_chapter_turbo(num: int) -> bool:
             mb = sz / (1024 * 1024)
             logger.info(f"[Chương {num}] Đã có sẵn audio hoàn chỉnh ({mb:.2f} MB). Bỏ qua.")
             await db.update_audio_status(num, 'done', rel_path, TARGET_VOICE)
+            # Tự động đẩy ngay lên Cloud CDN để server prod phát được ngay lập tức
+            try:
+                import cloud_storage
+                asyncio.create_task(asyncio.to_thread(cloud_storage.upload_single_audio, Path(audio_path), f"chapter_{num:04d}.mp3"))
+            except Exception as e:
+                logger.warning(f"Lỗi khởi chạy upload Cloud: {e}")
             return True
         else:
             try: os.remove(audio_path)
@@ -240,6 +246,12 @@ async def convert_chapter_turbo(num: int) -> bool:
             mb = os.path.getsize(audio_path) / (1024 * 1024)
             logger.info(f"🎉 [Chương {num}] HOÀN THÀNH XUẤT SẮC TRONG {elapsed}s! Kích thước: {mb:.2f} MB ({success_count}/{len(chunks)} chunks)")
             await db.update_audio_status(num, 'done', rel_path, TARGET_VOICE)
+            # Tự động đẩy ngay lên Cloud CDN để server prod phát được ngay lập tức
+            try:
+                import cloud_storage
+                asyncio.create_task(asyncio.to_thread(cloud_storage.upload_single_audio, Path(audio_path), f"chapter_{num:04d}.mp3"))
+            except Exception as e:
+                logger.warning(f"Lỗi khởi chạy upload Cloud: {e}")
             return True
 
     clean_files(temp_files)
