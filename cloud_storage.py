@@ -5,8 +5,8 @@ Mien phi 50GB storage, CDN toan cau, ho tro HTTP 206 Partial Content (Range requ
 import os
 import logging
 from pathlib import Path
-from typing import Optional
-from huggingface_hub import HfApi
+from typing import Optional, List
+from huggingface_hub import HfApi, CommitOperationAdd
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,32 @@ def upload_single_audio(local_file_path: Path, filename: Optional[str] = None) -
         return True
     except Exception as e:
         logger.error(f"✗ Loi upload {fname} len Cloud Storage: {e}")
+        return False
+
+def upload_batch_audio(file_paths: List[Path]) -> bool:
+    """Upload nhieu file audio cung luc trong 1 commit duy nhat de tiet kiem rate limit."""
+    valid_files = [f for f in file_paths if f.exists()]
+    if not valid_files:
+        return True
+    try:
+        api = HfApi(token=HF_TOKEN)
+        operations = [
+            CommitOperationAdd(
+                path_in_repo=f"audio/{f.name}",
+                path_or_fileobj=str(f)
+            )
+            for f in valid_files
+        ]
+        api.create_commit(
+            repo_id=REPO_ID,
+            repo_type="dataset",
+            operations=operations,
+            commit_message=f"Batch upload {len(operations)} audio chapters"
+        )
+        logger.info(f"✓ Da batch upload thanh cong {len(operations)} chuong vao 1 commit duy nhat!")
+        return True
+    except Exception as e:
+        logger.warning(f"Loi batch upload: {e}")
         return False
 
 def sync_all_audio(audio_dir: Path) -> bool:
