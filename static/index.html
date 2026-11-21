@@ -5,18 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0d0d1a">
+<meta name="theme-color" content="#0a0a14">
 <title>Tu Tiên Audio 🎧</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-main: #0a0a14;
     --bg-card: #131326;
     --bg-card-hover: #1c1c38;
-    --bg-glass: rgba(19, 19, 38, 0.85);
+    --bg-glass: rgba(15, 15, 30, 0.92);
+    --border-glass: rgba(255, 255, 255, 0.08);
     --accent: #8b5cf6;
-    --accent-glow: rgba(139, 92, 246, 0.4);
+    --accent-glow: rgba(139, 92, 246, 0.35);
     --accent-light: #c4b5fd;
     --gold: #f59e0b;
+    --gold-glow: rgba(245, 158, 11, 0.25);
     --success: #10b981;
     --error: #ef4444;
     --text-primary: #f8fafc;
@@ -30,21 +35,29 @@
   body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
     padding-bottom: calc(90px + var(--safe-bottom));
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── APP HEADER ── */
-  .app-header {
-    position: sticky; top: 0; z-index: 90;
+  /* ── STICKY TOP CONTAINER (CỐ ĐỊNH HOÀN TOÀN KHI CUỘN TRANG) ── */
+  .sticky-top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     background: var(--bg-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding: 12px 16px 8px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-glass);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  }
+
+  /* App Header Row */
+  .app-header {
+    padding: 10px 16px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
   .header-content { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .novel-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -60,9 +73,20 @@
     font-size: 14px; font-weight: 700; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .novel-sub { font-size: 11px; color: var(--accent-light); margin-top: 2px; }
+  .novel-sub { font-size: 11px; color: var(--accent-light); margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+  
+  .status-badge {
+    font-size: 11px; color: var(--success); font-weight: 700;
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    background: rgba(16, 185, 129, 0.12); padding: 4px 10px; border-radius: 20px;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 6px var(--success);
+  }
 
-  /* Stats Pill */
+  /* Stats Pill Strip */
   .stats-strip {
     display: flex; gap: 6px; overflow-x: auto;
     margin-top: 8px; padding-bottom: 2px; scrollbar-width: none;
@@ -72,15 +96,33 @@
     padding: 4px 9px; border-radius: 20px;
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
     font-size: 11px; color: var(--text-secondary); white-space: nowrap;
-    display: flex; align-items: center; gap: 4px;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
   }
   .stat-pill strong { color: #fff; font-weight: 700; }
   .stat-pill.done strong { color: var(--success); }
 
-  /* ── FILTER & QUICK JUMP ── */
+  /* Interactive Converting Pill */
+  .stat-pill.converting-pill {
+    color: #fbbf24; cursor: pointer;
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    transition: all 0.2s ease;
+  }
+  .stat-pill.converting-pill:hover, .stat-pill.converting-pill:active {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: #fbbf24;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px var(--gold-glow);
+  }
+  .pill-cue {
+    font-size: 9px; font-weight: 700; padding: 1px 6px;
+    border-radius: 10px; background: rgba(245, 158, 11, 0.3); color: #fef08a;
+    display: inline-flex; align-items: center;
+  }
+
+  /* Control Strip (Search & Jump) */
   .control-strip {
-    padding: 10px 16px; display: flex; gap: 8px;
-    background: var(--bg-main); position: sticky; top: 92px; z-index: 80;
+    padding: 8px 16px 6px; display: flex; gap: 8px;
   }
   .search-box {
     flex: 1; position: relative;
@@ -89,7 +131,7 @@
     width: 100%; height: 38px; background: var(--bg-card);
     border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
     padding: 0 12px 0 34px; color: #fff; font-size: 13px; outline: none;
-    transition: all 0.2s;
+    transition: all 0.2s; font-family: inherit;
   }
   .search-input:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
   .search-icon {
@@ -99,20 +141,22 @@
   .quick-jump-btn {
     height: 38px; padding: 0 14px; border-radius: 12px;
     background: linear-gradient(135deg, #7c3aed, #6366f1);
-    color: #fff; border: none; font-size: 12px; font-weight: 600;
+    color: #fff; border: none; font-size: 12px; font-weight: 700;
     cursor: pointer; display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    font-family: inherit;
   }
   .quick-jump-btn:active { transform: scale(0.96); }
 
   /* Quick filter tags */
   .tag-filters {
-    padding: 0 16px 8px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    padding: 4px 16px 10px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
   }
   .tag-filters::-webkit-scrollbar { display: none; }
   .tag-btn {
     padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
     background: var(--bg-card); color: var(--text-secondary);
     border: 1px solid rgba(255,255,255,0.06); white-space: nowrap; cursor: pointer;
+    transition: all 0.15s ease; font-family: inherit;
   }
   .tag-btn.active {
     background: var(--accent); color: #fff; border-color: var(--accent);
@@ -120,36 +164,37 @@
   }
 
   /* ── CHAPTER LIST ── */
-  .chapters-container { padding: 4px 16px; }
+  .chapters-container { padding: 10px 16px; }
   .chapter-card {
     background: var(--bg-card);
     border: 1px solid rgba(255,255,255,0.05);
     border-radius: 14px;
-    padding: 12px 14px;
+    padding: 10px 12px;
     margin-bottom: 8px;
-    display: flex; align-items: center; gap: 12px;
-    cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
     user-select: none;
   }
-  .chapter-card:active { background: var(--bg-card-hover); border-color: var(--accent); }
+  .chapter-card:hover { border-color: rgba(139, 92, 246, 0.4); }
   .chapter-card.playing {
-    background: rgba(139, 92, 246, 0.15);
+    background: rgba(139, 92, 246, 0.16);
     border-color: var(--accent);
-    box-shadow: inset 0 0 12px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
   }
   .chapter-badge {
     min-width: 44px; height: 44px; border-radius: 12px;
     background: rgba(255,255,255,0.04);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    flex-shrink: 0; font-weight: 700; font-size: 13px; color: var(--accent-light);
+    flex-shrink: 0; font-weight: 800; font-size: 13px; color: var(--accent-light);
   }
   .chapter-card.playing .chapter-badge { background: var(--accent); color: #fff; }
-  .chapter-badge small { font-size: 8px; font-weight: 500; opacity: 0.7; }
+  .chapter-badge small { font-size: 8px; font-weight: 600; opacity: 0.7; }
   
-  .chapter-details { flex: 1; min-width: 0; }
+  .chapter-details { flex: 1; min-width: 0; cursor: pointer; }
   .chapter-name {
     font-size: 13.5px; font-weight: 600; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.35;
   }
   .chapter-sub-info {
     font-size: 11px; color: var(--text-muted); margin-top: 3px;
@@ -164,25 +209,52 @@
   .status-tag.none { background: rgba(255,255,255,0.05); color: var(--text-muted); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  .play-action-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(255,255,255,0.06); border: none;
-    color: #fff; font-size: 13px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  /* Dual Action Buttons (Nghe + Đọc) */
+  .chapter-actions {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
   }
-  .chapter-card.playing .play-action-btn {
-    background: var(--accent); box-shadow: 0 0 10px var(--accent-glow);
+  .btn-action {
+    height: 34px; padding: 0 11px; border-radius: 10px;
+    font-size: 11.5px; font-weight: 700; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 4px; font-family: inherit;
+    transition: transform 0.1s, opacity 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-action:active { transform: scale(0.94); }
+  
+  .btn-read {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .btn-read:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+  .btn-play {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+  }
+  .btn-play.is-playing {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  .btn-play.disabled {
+    opacity: 0.5;
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.06);
+    color: var(--text-muted);
   }
 
   /* ── FLOATING MINI PLAYER (BOTTOM) ── */
   .mini-player {
     position: fixed; bottom: calc(10px + var(--safe-bottom)); left: 12px; right: 12px;
-    height: 64px; background: rgba(20, 20, 42, 0.95);
+    height: 64px; background: rgba(18, 16, 36, 0.96);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 18px;
-    display: flex; align-items: center; padding: 0 14px; gap: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px var(--accent-glow);
-    z-index: 100; cursor: pointer; user-select: none;
+    border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 18px;
+    display: flex; align-items: center; padding: 0 14px; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 16px var(--accent-glow);
+    z-index: 95; cursor: pointer; user-select: none;
   }
   .mini-progress {
     position: absolute; top: -1px; left: 16px; right: 16px; height: 2.5px;
@@ -205,16 +277,18 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .mini-meta { font-size: 11px; color: var(--accent-light); margin-top: 2px; }
-  .mini-controls { display: flex; align-items: center; gap: 8px; }
+  .mini-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .mini-btn {
-    background: none; border: none; color: #fff; font-size: 20px;
+    background: none; border: none; color: #fff; font-size: 18px;
     padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
   }
+  .mini-btn:hover { background: rgba(255,255,255,0.1); }
   .mini-btn-play {
-    width: 42px; height: 42px; border-radius: 50%;
-    background: var(--accent); color: #fff; font-size: 16px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 10px var(--accent-glow);
+    box-shadow: 0 2px 10px var(--accent-glow); border: none; cursor: pointer;
   }
 
   /* ── FULL SCREEN PLAYER MODAL ── */
@@ -232,9 +306,9 @@
   }
   .modal-down-btn {
     background: rgba(255,255,255,0.08); border: none; color: #fff;
-    width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer;
+    width: 38px; height: 38px; border-radius: 50%; font-size: 18px; cursor: pointer;
   }
-  .modal-header-title { font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; }
+  .modal-header-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; }
   
   .art-container {
     flex: 1; display: flex; align-items: center; justify-content: center;
@@ -252,7 +326,7 @@
   @keyframes spin { 100% { transform: rotate(360deg); } }
 
   .track-meta { text-align: center; margin: 24px 0 16px; }
-  .track-title { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.3; }
+  .track-title { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.35; }
   .track-artist { font-size: 13px; color: var(--accent-light); margin-top: 6px; }
 
   /* Seek Bar */
@@ -289,17 +363,222 @@
   /* Extra toolbar */
   .player-toolbar {
     display: flex; align-items: center; justify-content: space-around;
-    padding: 12px; background: rgba(255,255,255,0.04); border-radius: 16px;
+    padding: 10px; background: rgba(255,255,255,0.04); border-radius: 16px; flex-wrap: wrap; gap: 6px;
   }
   .tool-pill {
     background: none; border: none; color: var(--text-secondary);
     font-size: 12px; font-weight: 600; cursor: pointer; padding: 6px 10px;
     border-radius: 10px; display: flex; align-items: center; gap: 4px;
-    transition: all 0.2s;
+    transition: all 0.2s; font-family: inherit;
   }
   .tool-pill.active { background: rgba(139, 92, 246, 0.25); color: #fff; border: 1px solid rgba(139, 92, 246, 0.5); }
+  .tool-pill.read-shortcut { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
 
-  /* Timer Modal Sheet */
+  /* ── CHẾ ĐỘ ĐỌC TRUYỆN BẰNG MẮT (READER MODE) ── */
+  .reader-modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 220; display: flex; flex-direction: column;
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+  .reader-modal-overlay.open { transform: translateY(0); }
+
+  /* Reader Theme Variations */
+  .reader-modal-overlay.theme-dark {
+    --r-bg: #0d0d1a;
+    --r-card: #15152a;
+    --r-border: rgba(255,255,255,0.08);
+    --r-title: #ffffff;
+    --r-text: #d8e2ee;
+    --r-meta: #8b9bb4;
+    --r-accent: #8b5cf6;
+    --r-shadow: rgba(0,0,0,0.6);
+  }
+  .reader-modal-overlay.theme-sepia {
+    --r-bg: #f5eedf;
+    --r-card: #e9deca;
+    --r-border: rgba(100,70,30,0.12);
+    --r-title: #2b1d12;
+    --r-text: #3c2918;
+    --r-meta: #7c5e3d;
+    --r-accent: #b45309;
+    --r-shadow: rgba(80,50,20,0.15);
+  }
+  .reader-modal-overlay.theme-light {
+    --r-bg: #f8fafc;
+    --r-card: #ffffff;
+    --r-border: rgba(0,0,0,0.08);
+    --r-title: #0f172a;
+    --r-text: #1e293b;
+    --r-meta: #64748b;
+    --r-accent: #6366f1;
+    --r-shadow: rgba(0,0,0,0.08);
+  }
+  .reader-modal-overlay.theme-oled {
+    --r-bg: #000000;
+    --r-card: #0d0d0d;
+    --r-border: rgba(255,255,255,0.06);
+    --r-title: #f3f4f6;
+    --r-text: #9ca3af;
+    --r-meta: #6b7280;
+    --r-accent: #a855f7;
+    --r-shadow: rgba(0,0,0,0.9);
+  }
+
+  .reader-modal-overlay {
+    background-color: var(--r-bg);
+    color: var(--r-text);
+  }
+
+  /* Reader Top Navigation Bar */
+  .reader-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--r-bg);
+    border-bottom: 1px solid var(--r-border); gap: 10px; flex-shrink: 0; z-index: 10;
+  }
+  .reader-header-left {
+    display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;
+  }
+  .reader-close-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--r-card); border: 1px solid var(--r-border);
+    color: var(--r-title); font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .reader-title-box { min-width: 0; }
+  .reader-novel-tag { font-size: 11px; color: var(--r-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reader-chap-tag { font-size: 14px; font-weight: 700; color: var(--r-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .reader-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .reader-opt-pill {
+    padding: 6px 10px; border-radius: 12px;
+    background: var(--r-card); border: 1px solid var(--r-border);
+    color: var(--r-title); font-size: 12px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;
+  }
+  .reader-opt-pill:active { transform: scale(0.96); }
+
+  /* Reading Progress Track */
+  .reader-progress-track {
+    width: 100%; height: 3px; background: rgba(0,0,0,0.06); flex-shrink: 0;
+  }
+  .reader-progress-fill {
+    height: 100%; width: 0%; background: var(--r-accent);
+    transition: width 0.15s ease-out;
+  }
+
+  /* Reader Settings Panel (Themes & Font Size) */
+  .reader-settings-panel {
+    background: var(--r-card); border-bottom: 1px solid var(--r-border);
+    padding: 12px 16px; display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 4px 16px var(--r-shadow); animation: slideDown 0.2s ease;
+  }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+  .settings-label { font-size: 12px; font-weight: 600; color: var(--r-meta); }
+  
+  .theme-grid { display: flex; gap: 8px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+  .theme-btn {
+    padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700;
+    cursor: pointer; border: 1.5px solid transparent; display: flex; align-items: center; gap: 4px;
+    white-space: nowrap; font-family: inherit;
+  }
+  .theme-btn.active { border-color: var(--r-accent); box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); }
+  .theme-btn-dark { background: #16162d; color: #fff; }
+  .theme-btn-sepia { background: #ebe0cc; color: #3c2918; }
+  .theme-btn-light { background: #ffffff; color: #1e293b; border: 1px solid rgba(0,0,0,0.1); }
+  .theme-btn-oled { background: #000000; color: #9ca3af; border: 1px solid rgba(255,255,255,0.1); }
+
+  .font-controls { display: flex; align-items: center; gap: 6px; }
+  .font-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--r-bg); border: 1px solid var(--r-border);
+    color: var(--r-title); font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .font-size-text { font-size: 12px; font-weight: 700; color: var(--r-title); min-width: 36px; text-align: center; }
+  .font-family-btn {
+    padding: 6px 12px; border-radius: 8px;
+    background: var(--r-bg); border: 1px solid var(--r-border);
+    color: var(--r-title); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+
+  /* Reader Scroll Body */
+  .reader-scroll-area {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 24px 20px calc(80px + var(--safe-bottom));
+  }
+  .reader-content-box {
+    max-width: 760px; margin: 0 auto;
+  }
+  .reader-heading {
+    font-size: 22px; font-weight: 800; color: var(--r-title);
+    line-height: 1.4; margin-bottom: 8px;
+  }
+  .reader-subheading {
+    font-size: 12px; color: var(--r-meta); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .reader-body-text {
+    font-size: var(--r-font-size, 18px);
+    line-height: 1.85;
+    color: var(--r-text);
+    font-family: var(--r-font-family, 'Merriweather', Georgia, serif);
+  }
+  .reader-body-text p {
+    margin-bottom: 1.4em;
+    text-indent: 1.6em;
+    text-align: justify;
+  }
+  .reader-loading {
+    text-align: center; padding: 60px 0; color: var(--r-meta); font-size: 14px;
+  }
+
+  /* Reader Bottom Navigation */
+  .reader-bottom-nav {
+    margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid var(--r-border);
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .reader-nav-btn {
+    padding: 10px 16px; border-radius: 12px;
+    background: var(--r-card); border: 1px solid var(--r-border);
+    color: var(--r-title); font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit;
+  }
+  .reader-nav-btn.primary {
+    background: var(--r-accent); color: #fff; border-color: var(--r-accent);
+  }
+  .reader-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Reader Audio Dock (Nghe Audio ngay trong khi đọc) */
+  .reader-audio-dock {
+    position: sticky; bottom: 0; left: 0; right: 0;
+    background: var(--r-card); border-top: 1px solid var(--r-border);
+    padding: 10px 16px calc(10px + var(--safe-bottom));
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    box-shadow: 0 -4px 16px var(--r-shadow); z-index: 15;
+  }
+  .dock-info { min-width: 0; flex: 1; }
+  .dock-chap-name { font-size: 12px; font-weight: 700; color: var(--r-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dock-time-meta { font-size: 11px; color: var(--r-meta); }
+  .dock-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .dock-btn {
+    background: var(--r-bg); border: 1px solid var(--r-border);
+    color: var(--r-title); width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer;
+  }
+  .dock-btn-play {
+    background: var(--r-accent); color: #fff; border-color: var(--r-accent);
+    width: 38px; height: 38px; font-size: 15px;
+  }
+
+  /* ── HÀNG ĐỢI CONVERT (CONVERTING QUEUE MODAL) ── */
   .timer-modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
@@ -318,6 +597,20 @@
   .timer-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .timer-modal-title { font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
   .timer-close-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer; }
+  
+  .queue-item {
+    padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .queue-item.active {
+    background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35);
+  }
+  .queue-left { min-width: 0; flex: 1; }
+  .queue-title { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .queue-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Timer Elements */
   .timer-active-banner {
     background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);
     padding: 10px 14px; border-radius: 12px; font-size: 13px; color: #34d399;
@@ -332,18 +625,18 @@
   .preset-btn {
     background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08);
     color: #fff; padding: 12px 6px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: all 0.15s; text-align: center;
+    transition: all 0.15s; text-align: center; font-family: inherit;
   }
   .preset-btn:active { transform: scale(0.96); background: var(--accent); }
   .timer-custom-box { display: flex; gap: 8px; }
   .timer-custom-input {
     flex: 1; height: 42px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px; padding: 0 14px; color: #fff; font-size: 14px; outline: none;
+    border-radius: 12px; padding: 0 14px; color: #fff; font-size: 14px; outline: none; font-family: inherit;
   }
   .timer-custom-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
   .timer-set-btn {
     background: linear-gradient(135deg, var(--accent), #6366f1); border: none; color: #fff;
-    padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit;
   }
 
   /* Toast Notification */
@@ -361,50 +654,61 @@
 </head>
 <body>
 
-<!-- TOP APP HEADER -->
-<header class="app-header">
-  <div class="header-content">
-    <div class="novel-brand" onclick="handleSecretTap()" style="cursor:pointer;user-select:none" title="Chạm 3 lần để mở cổng 4G từ xa">
-      <div class="novel-avatar" id="headerAvatar">📖</div>
-      <div class="novel-title-group">
-        <h1 class="novel-name">Tu Tiên: Khai Cục Từ Dược Đồng</h1>
-        <div class="novel-sub">🌸 Giọng đọc Nữ Hoài My • Server Active</div>
+<!-- STICKY TOP CONTAINER (TOÀN BỘ THANH ĐIỀU HƯỚNG + BỘ LỌC CỐ ĐỊNH KHI CUỘN) -->
+<div class="sticky-top-bar" id="stickyTopBar">
+  <!-- TOP APP HEADER -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="novel-brand" onclick="handleSecretTap()" style="cursor:pointer;user-select:none" title="Chạm 3 lần để mở link 4G từ xa">
+        <div class="novel-avatar" id="headerAvatar">📖</div>
+        <div class="novel-title-group">
+          <h1 class="novel-name">Tu Tiên: Khai Cục Từ Dược Đồng</h1>
+          <div class="novel-sub">
+            <span>🌸 Nữ Hoài My</span>
+            <span>&bull;</span>
+            <span style="color:#38bdf8">Đọc & Nghe Song Song</span>
+          </div>
+        </div>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Online
       </div>
     </div>
-    <div style="font-size:11px;color:var(--success);font-weight:700;display:flex;align-items:center;gap:4px">
-      <span style="width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success)"></span>
-      Online
+
+    <!-- Live Stats Strip -->
+    <div class="stats-strip" id="statsStrip">
+      <div class="stat-pill">📚 Tổng: <strong id="stTotal">2045</strong> ch</div>
+      <div class="stat-pill done">✅ Audio: <strong id="stDone">0</strong></div>
+      <div class="stat-pill converting-pill" id="stConvertingPill" onclick="openConvertingModal()" title="Bấm để xem danh sách các chương đang convert và đợi convert">
+        ⚡ Đang convert: <strong id="stConverting">0</strong>
+        <span class="pill-cue">🔍 Xem list</span>
+      </div>
+      <div class="stat-pill">🎯 Bắt đầu: <strong>950+</strong></div>
+      <div class="stat-pill" id="statSavedPill" style="cursor:pointer;display:none;background:rgba(139,92,246,0.18);border-color:rgba(139,92,246,0.4)" onclick="jumpToSavedChapter()" title="Bấm để cuộn nhanh đến vị trí nghe đã lưu">
+        💾 <strong id="statSavedText" style="color:#c4b5fd">Chương ...</strong>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <!-- Live Stats -->
-  <div class="stats-strip" id="statsStrip">
-    <div class="stat-pill">📚 Tổng: <strong id="stTotal">1451</strong> ch</div>
-    <div class="stat-pill done">✅ Audio: <strong id="stDone">0</strong></div>
-    <div class="stat-pill" style="color:#fbbf24">⚡ Đang convert: <strong id="stConverting">0</strong></div>
-    <div class="stat-pill">🎯 Bắt đầu: <strong>950+</strong></div>
-    <div class="stat-pill" id="statSavedPill" style="cursor:pointer;display:none;background:rgba(139,92,246,0.18);border-color:rgba(139,92,246,0.4)" onclick="jumpToSavedChapter()" title="Bấm để cuộn nhanh đến vị trí nghe đã lưu">
-      💾 <strong id="statSavedText" style="color:#c4b5fd">Chương ...</strong>
+  <!-- QUICK SEARCH & JUMP -->
+  <div class="control-strip">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="number" class="search-input" id="quickChapInput" placeholder="Nhập số chương (1 - 2045)..." min="1" max="2045" onkeydown="if(event.key==='Enter') jumpToChapter()">
     </div>
+    <button class="quick-jump-btn" onclick="jumpToChapter()">
+      ⚡ Nhảy tới
+    </button>
   </div>
-</header>
 
-<!-- QUICK SEARCH & JUMP -->
-<div class="control-strip">
-  <div class="search-box">
-    <span class="search-icon">🔍</span>
-    <input type="number" class="search-input" id="quickChapInput" placeholder="Nhập số chương (1 - 2045)..." min="1" max="2045">
+  <!-- QUICK FILTER TAGS -->
+  <div class="tag-filters">
+    <button class="tag-btn active" onclick="setFilter('950', this)">⚡ Từ Chương 950+</button>
+    <button class="tag-btn" onclick="setFilter('done', this)">✅ Đã có Audio</button>
+    <button class="tag-btn" onclick="setFilter('converting', this)">⏳ Đang convert</button>
+    <button class="tag-btn" onclick="setFilter('all', this)">📋 Toàn bộ (1-2045)</button>
   </div>
-  <button class="quick-jump-btn" onclick="jumpToChapter()">
-    ⚡ Nhảy tới
-  </button>
-</div>
-
-<!-- QUICK FILTER TAGS -->
-<div class="tag-filters">
-  <button class="tag-btn active" onclick="setFilter('950', this)">⚡ Từ Chương 950+</button>
-  <button class="tag-btn" onclick="setFilter('done', this)">✅ Đã có Audio</button>
-  <button class="tag-btn" onclick="setFilter('all', this)">📋 Toàn bộ (1-2045)</button>
 </div>
 
 <!-- CHAPTERS LIST CONTAINER -->
@@ -425,6 +729,7 @@
     <div class="mini-meta" id="miniMeta">🌸 Nữ Hoài My</div>
   </div>
   <div class="mini-controls" onclick="event.stopPropagation()">
+    <button class="mini-btn" onclick="openReader(currentPlayingNum)" title="Đọc chữ chương này">📖</button>
     <button class="mini-btn-play" id="miniPlayBtn" onclick="togglePlay()">▶</button>
     <button class="mini-btn" onclick="playNext()">⏭</button>
   </div>
@@ -469,10 +774,120 @@
 
   <!-- Tools & Settings -->
   <div class="player-toolbar">
+    <button class="tool-pill read-shortcut" onclick="closeFullPlayer(); openReader(currentPlayingNum)">📖 Đọc chữ chương này</button>
     <button class="tool-pill" id="speedPill" onclick="cyclePlaybackRate()">⚡ Tốc độ: 1.0×</button>
     <button class="tool-pill active" id="autoNextPill" onclick="toggleAutoNext()">🔂 Tự chuyển: BẬT</button>
     <button class="tool-pill" id="timerPill" onclick="openTimerModal()">⏱ Hẹn giờ: Tắt</button>
     <button class="tool-pill active" id="saveStatePill" onclick="manualSaveState()" title="Tự động lưu state mỗi 15 phút">💾 Tự lưu: 15p</button>
+  </div>
+</div>
+
+<!-- CHẾ ĐỘ ĐỌC TRUYỆN BẰNG MẮT (READER MODAL) -->
+<div class="reader-modal-overlay theme-dark" id="readerModal">
+  <!-- Reader Header -->
+  <div class="reader-header">
+    <div class="reader-header-left">
+      <button class="reader-close-btn" onclick="closeReader()" title="Đóng chế độ đọc">✕</button>
+      <div class="reader-title-box">
+        <div class="reader-novel-tag">Tu Tiên: Khai Cục Từ Dược Đồng</div>
+        <div class="reader-chap-tag" id="readerHeaderTitle">Chương ...</div>
+      </div>
+    </div>
+    <div class="reader-header-actions">
+      <button class="reader-opt-pill" onclick="toggleReaderSettings()" title="Tuỳ chỉnh giao diện & cỡ chữ">🎨 Cài đặt</button>
+    </div>
+  </div>
+
+  <!-- Reading Progress Track -->
+  <div class="reader-progress-track">
+    <div class="reader-progress-fill" id="readerProgressFill"></div>
+  </div>
+
+  <!-- Settings Popover -->
+  <div class="reader-settings-panel" id="readerSettingsPanel" style="display:none">
+    <div class="settings-row">
+      <span class="settings-label">Chủ đề màu:</span>
+      <div class="theme-grid">
+        <button class="theme-btn theme-btn-dark active" onclick="setReaderTheme('dark', this)">🌙 Tối</button>
+        <button class="theme-btn theme-btn-sepia" onclick="setReaderTheme('sepia', this)">📜 Giấy vàng</button>
+        <button class="theme-btn theme-btn-light" onclick="setReaderTheme('light', this)">☀️ Sáng</button>
+        <button class="theme-btn theme-btn-oled" onclick="setReaderTheme('oled', this)">🌑 OLED</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="settings-label">Cỡ chữ:</span>
+        <div class="font-controls">
+          <button class="font-btn" onclick="changeFontSize(-1)">A-</button>
+          <span class="font-size-text" id="fontSizeText">18px</span>
+          <button class="font-btn" onclick="changeFontSize(1)">A+</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="settings-label">Font:</span>
+        <button class="font-family-btn" id="fontFamilyBtn" onclick="toggleFontFamily()">Serif (Có chân)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reader Scroll Body -->
+  <div class="reader-scroll-area" id="readerScrollArea" onscroll="handleReaderScroll()">
+    <div class="reader-content-box">
+      <h1 class="reader-heading" id="readerBodyTitle">Chương ...</h1>
+      <div class="reader-subheading" id="readerMetaBar">Đang tải nội dung...</div>
+      
+      <div class="reader-body-text" id="readerBodyText">
+        <div class="reader-loading">⏳ Đang tải nội dung chương truyện từ máy chủ...</div>
+      </div>
+
+      <!-- Bottom Navigation inside Reader -->
+      <div class="reader-bottom-nav">
+        <button class="reader-nav-btn" id="readerPrevBtn" onclick="readerGoPrev()">← Chương trước</button>
+        <button class="reader-nav-btn primary" id="readerListenBtn" onclick="readerPlayAudioCurrent()">
+          🎧 Nghe Audio
+        </button>
+        <button class="reader-nav-btn" id="readerNextBtn" onclick="readerGoNext()">Chương sau →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Docked Mini Audio Player inside Reader (khi đang phát audio) -->
+  <div class="reader-audio-dock" id="readerAudioDock" style="display:none">
+    <div class="dock-info">
+      <div class="dock-chap-name" id="readerDockTitle">Chương ...</div>
+      <div class="dock-time-meta" id="readerDockMeta">🌸 Nữ Hoài My &bull; <span id="readerDockTime">0:00 / 0:00</span></div>
+    </div>
+    <div class="dock-controls">
+      <button class="dock-btn" onclick="seekRelative(-15)" title="Lùi 15s">↺15</button>
+      <button class="dock-btn dock-btn-play" id="readerDockPlayBtn" onclick="togglePlay()">▶</button>
+      <button class="dock-btn" onclick="seekRelative(15)" title="Tới 15s">15↻</button>
+    </div>
+  </div>
+</div>
+
+<!-- HÀNG ĐỢI CONVERT (CONVERTING QUEUE MODAL) -->
+<div class="timer-modal-overlay" id="convertingModalOverlay" onclick="closeConvertingModal()">
+  <div class="timer-modal-card" onclick="event.stopPropagation()" style="max-height:85vh;display:flex;flex-direction:column">
+    <div class="timer-modal-header">
+      <div class="timer-modal-title">
+        <span>⚡</span>
+        <span>Hàng Đợi Convert Audio</span>
+      </div>
+      <button class="timer-close-btn" onclick="closeConvertingModal()">✕</button>
+    </div>
+
+    <!-- Daemon status banner -->
+    <div style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">⚙️</span>
+      <div style="font-size:12px;color:#e2e8f0;line-height:1.4">
+        <strong style="color:#c4b5fd">Cơ chế Convert Tuần Tự (PC Daemon):</strong><br>
+        Worker PC tự động convert tuần tự từng chương tăng dần từ 935+ và đẩy thẳng lên Hugging Face Cloud.
+      </div>
+    </div>
+
+    <div style="overflow-y:auto;flex:1;padding-right:2px" id="convertingQueueList">
+      <div style="text-align:center;padding:20px;color:var(--text-muted)">Đang tải hàng đợi...</div>
+    </div>
   </div>
 </div>
 
@@ -501,7 +916,7 @@
       <button class="preset-btn" onclick="setEndOfChapterTimer()">Hết chương</button>
     </div>
 
-    <!-- Custom Input (Input tay tự set) -->
+    <!-- Custom Input -->
     <div class="timer-label" style="margin-top:14px">Hoặc tự nhập số phút (Input tay):</div>
     <div class="timer-custom-box">
       <input type="number" class="timer-custom-input" id="customMinutesInput" placeholder="Nhập số phút (VD: 25)..." min="1" max="720">
@@ -525,38 +940,32 @@
     <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
       <span style="font-size:24px">🟢</span>
       <div style="font-size:12px;color:#e2e8f0;line-height:1.4">
-        <strong style="color:#34d399">Server PC Đang Hoạt Động 24/7</strong><br>
+        <strong style="color:#34d399">Server Hoạt Động 24/7</strong><br>
         Truy cập máy tính từ điện thoại qua mạng 4G/5G/Wi-Fi bên ngoài.
       </div>
     </div>
 
     <!-- QR Code Scan -->
-    <div style="text-align:center;padding:16px;background:rgba(255,255,255,0.03);border-radius:16px;border:1px solid var(--border);margin-bottom:16px">
+    <div style="text-align:center;padding:16px;background:rgba(255,255,255,0.03);border-radius:16px;border:1px solid var(--border-glass);margin-bottom:16px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;font-weight:600">
         📱 MỞ CAMERA ĐIỆN THOẠI QUÉT QR VÀO NGAY:
       </div>
       <div style="display:inline-block;padding:10px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
-        <img id="remoteQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://mouse-soc-focal-five.trycloudflare.com" alt="QR Code" style="width:180px;height:180px;display:block">
+        <img id="remoteQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://truyen-audio.onrender.com" alt="QR Code" style="width:180px;height:180px;display:block">
       </div>
     </div>
 
     <!-- Public HTTPS 4G Link -->
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600">
-        🔗 LINK TRUY CẬP 4G TOÀN CẦU (HTTPS):
+        🔗 LINK CLOUD HTTPS (RENDER):
       </div>
       <div style="display:flex;gap:8px">
-        <input type="text" id="remotePublicUrlInput" value="https://mouse-soc-focal-five.trycloudflare.com" readonly style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:#38bdf8;font-size:13px;font-family:monospace;outline:none">
+        <input type="text" id="remotePublicUrlInput" value="https://truyen-audio.onrender.com" readonly style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border-glass);border-radius:10px;padding:10px 12px;color:#38bdf8;font-size:13px;font-family:monospace;outline:none">
         <button onclick="copyRemoteUrl()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:0 16px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">
           📋 Sao chép
         </button>
       </div>
-    </div>
-
-    <!-- LAN IP Link for Home Wi-Fi -->
-    <div style="font-size:12px;color:var(--text-muted);background:rgba(0,0,0,0.25);padding:12px;border-radius:12px;line-height:1.6">
-      🏠 <strong>Khi ở nhà (Chung Wi-Fi):</strong> <a id="remoteLocalUrlLink" href="http://192.168.1.177:8899" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">http://192.168.1.177:8899</a><br>
-      💡 <em>Tính năng ẩn: Chỉ cần gõ 3 lần vào biểu tượng 📖 trên đầu trang bất cứ lúc nào để mở lại bảng này.</em>
     </div>
   </div>
 </div>
@@ -573,6 +982,8 @@ let chapters = [];
 let filteredChapters = [];
 let currentFilter = '950';
 let currentPlayingNum = null;
+let currentReadingNum = null;
+
 let playbackRates = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5];
 let currentRateIdx = 0;
 const savedRate = parseFloat(localStorage.getItem('savedPlaybackRate'));
@@ -585,8 +996,13 @@ let sleepTimerEndTime = null;
 let sleepTimerInterval = null;
 let sleepEndOfChapter = false;
 
+// Reader preferences
+let readerFontSize = parseInt(localStorage.getItem('reader_font_size')) || 18;
+let readerFontFamily = localStorage.getItem('reader_font_family') || 'serif';
+let readerTheme = localStorage.getItem('reader_theme') || 'dark';
+
 // ── AUTO-SAVE & RESTORE STATE (MỖI 15P + KHI DỪNG/TẮT APP) ─────────────
-const FIFTEEN_MINUTES_MS = 15 * 60 * 1000; // 15 phút
+const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 let lastThrottledSave = 0;
 
 const audio = document.getElementById('audioElement');
@@ -596,8 +1012,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupAudioEvents();
   setupMediaSession();
   setupStatePersistenceEvents();
+  applyReaderPreferences();
   updateAutoNextUI();
   updateSpeedUI();
+
   await loadChapters();
   startAutoRefresh();
 
@@ -605,10 +1023,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await restoreSavedPlaybackState();
 });
 
-// ── LOAD & RENDER ──────────────────────────────────────────────────────────
+// ── LOAD & RENDER CHAPTERS ────────────────────────────────────────────────
 async function loadChapters() {
   try {
-    const res = await fetch('/api/chapters?limit=2000&offset=0');
+    const res = await fetch('/api/chapters?limit=2500&offset=0');
     const data = await res.json();
     chapters = data.chapters || [];
     renderChapters();
@@ -631,7 +1049,7 @@ function updateStats() {
 function setFilter(type, el) {
   currentFilter = type;
   document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   renderChapters();
 }
 
@@ -643,12 +1061,14 @@ function renderChapters() {
     list = list.filter(c => c.num >= 950);
   } else if (currentFilter === 'done') {
     list = list.filter(c => c.audio_status === 'done');
+  } else if (currentFilter === 'converting') {
+    list = list.filter(c => c.audio_status === 'converting');
   }
 
   filteredChapters = list;
 
   if (list.length === 0) {
-    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Không có chương nào phù hợp</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Không có chương nào phù hợp với bộ lọc</div>`;
     return;
   }
 
@@ -667,21 +1087,27 @@ function renderChapters() {
     }
 
     return `
-      <div class="chapter-card ${isPlaying ? 'playing' : ''}" id="chap-${c.num}" onclick="handleChapterClick(${c.num})">
+      <div class="chapter-card ${isPlaying ? 'playing' : ''}" id="chap-${c.num}">
         <div class="chapter-badge">
           ${c.num}
           <small>HỒI</small>
         </div>
-        <div class="chapter-details">
+        <div class="chapter-details" onclick="openReader(${c.num})">
           <div class="chapter-name">${c.title || 'Chương ' + c.num}</div>
           <div class="chapter-sub-info">
             ${statusHtml}
-            ${c.word_count ? `<span>${c.word_count} từ</span>` : ''}
+            ${c.word_count ? `<span>${c.word_count.toLocaleString()} từ</span>` : ''}
           </div>
         </div>
-        <button class="play-action-btn">
-          ${isPlaying && !audio.paused ? '⏸' : (isDone ? '▶' : '⏳')}
-        </button>
+        <div class="chapter-actions">
+          <button class="btn-action btn-read" onclick="openReader(${c.num})" title="Đọc truyện bằng mắt">
+            📖 Đọc
+          </button>
+          <button class="btn-action btn-play ${isPlaying && !audio.paused ? 'is-playing' : ''} ${!isDone && !isConverting ? 'disabled' : ''}" 
+                  onclick="handlePlayButtonClick(${c.num})">
+            ${isPlaying && !audio.paused ? '⏸ Dừng' : (isDone ? '▶ Nghe' : (isConverting ? '⏳ Convert' : '🎧 Chờ'))}
+          </button>
+        </div>
       </div>
     `;
   }).join('');
@@ -690,22 +1116,21 @@ function renderChapters() {
 }
 
 // ── PLAYBACK LOGIC ────────────────────────────────────────────────────────
-function handleChapterClick(num) {
+function handlePlayButtonClick(num) {
   const ch = chapters.find(c => c.num === num);
   if (!ch) return;
 
   if (ch.audio_status === 'done') {
     if (currentPlayingNum === num && audio.src) {
-      // Nhấn vào chính chương đang chọn -> Toggle Play/Pause giữ nguyên vị trí
       togglePlay();
     } else {
-      // Chuyển sang chương mới
       playChapter(num, 0);
     }
   } else if (ch.audio_status === 'converting') {
-    showToast(`⏳ Chương ${num} đang được server convert, vui lòng đợi giây lát!`);
+    showToast(`⏳ Chương ${num} đang được PC Worker convert, vui lòng đợi giây lát!`);
+    openConvertingModal();
   } else {
-    showToast(`Chương ${num} đang trong hàng đợi convert tự động tại server.`);
+    showToast(`Chương ${num} đang trong hàng đợi convert tuần tự. Bạn có thể bấm [📖 Đọc] để đọc chữ ngay!`, 3500);
   }
 }
 
@@ -719,6 +1144,7 @@ async function playChapter(num, startAtTime = 0) {
 
   setupMiniPlayer(ch, startAtTime);
   setupFullPlayer(ch, startAtTime);
+  updateReaderAudioDock(ch);
 
   if (startAtTime > 0) {
     const onMeta = () => {
@@ -755,6 +1181,17 @@ function setupMiniPlayer(ch, seekTime = 0) {
 
 function setupFullPlayer(ch, seekTime = 0) {
   document.getElementById('fullTitle').textContent = `Chương ${ch.num}: ${ch.title || ''}`;
+}
+
+function updateReaderAudioDock(ch) {
+  const dock = document.getElementById('readerAudioDock');
+  if (!dock) return;
+  if (currentPlayingNum && audio.src) {
+    dock.style.display = 'flex';
+    document.getElementById('readerDockTitle').textContent = `Chương ${ch ? ch.num : currentPlayingNum}: ${ch ? (ch.title || '') : ''}`;
+  } else {
+    dock.style.display = 'none';
+  }
 }
 
 function togglePlay() {
@@ -794,14 +1231,12 @@ async function savePlaybackState(isPeriodic15m = false) {
     saved_at: Date.now()
   };
 
-  // 1. Lưu tức thì vào localStorage
   localStorage.setItem('truyen_audio_state', JSON.stringify(stateData));
   localStorage.setItem('lastPlayedNum', currentPlayingNum);
   localStorage.setItem('lastPlayedTime', seekSecs);
 
   updateSavedPillUI(stateData);
 
-  // 2. Đồng bộ ngầm lên server SQLite
   try {
     fetch('/api/playback-state', {
       method: 'POST',
@@ -874,6 +1309,9 @@ function updateSeekUI(currentTime, duration) {
   
   const totTimeEl = document.getElementById('fullTotalTime');
   if (totTimeEl && duration > 0) totTimeEl.textContent = formatSeconds(duration);
+
+  const dockTime = document.getElementById('readerDockTime');
+  if (dockTime) dockTime.textContent = `${formatSeconds(currentTime)} / ${formatSeconds(duration)}`;
 }
 
 async function restoreSavedPlaybackState() {
@@ -883,7 +1321,6 @@ async function restoreSavedPlaybackState() {
     if (local) state = JSON.parse(local);
   } catch (e) {}
 
-  // Fallback từ backend SQLite nếu client chưa có
   if (!state || !state.chapter_num) {
     try {
       const res = await fetch('/api/playback-state');
@@ -923,38 +1360,21 @@ async function restoreSavedPlaybackState() {
   };
   audio.addEventListener('loadedmetadata', onMeta);
 
-  // Hiển thị sẵn Mini Player và Full Player ở vị trí đó, đợi bấm Play ▶
   setupMiniPlayer(ch, targetSeek);
   setupFullPlayer(ch, targetSeek);
   updatePlayStateUI(false);
   updateSeekUI(targetSeek, targetDuration);
   updateSavedPillUI(state);
-
-  // Highlight thẻ chương trong danh sách
   renderChapters();
-
-  // Tự động cuộn đến chương đó
-  setTimeout(() => {
-    const card = document.getElementById(`chap-${ch.num}`);
-    if (card) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      card.style.borderColor = 'var(--accent)';
-      setTimeout(() => card.style.borderColor = '', 2000);
-    }
-  }, 400);
-
-  showToast(`🎧 Đã hiển thị sẵn Chương ${ch.num} tại ${formatSeconds(targetSeek)}. Bấm ▶ để tiếp tục nghe!`);
 }
 
 function setupStatePersistenceEvents() {
-  // Bộ đếm định kỳ: Cứ đúng mỗi 15 phút tự động lưu state
   setInterval(() => {
     if (!audio.paused && audio.currentTime > 0) {
       savePlaybackState(true);
     }
   }, FIFTEEN_MINUTES_MS);
 
-  // Tự động lưu khi tắt app, đổi tab, lock màn hình, hoặc tạm dừng
   audio.addEventListener('pause', () => savePlaybackState(false));
   window.addEventListener('beforeunload', () => savePlaybackState(false));
   window.addEventListener('pagehide', () => savePlaybackState(false));
@@ -1000,9 +1420,7 @@ function cyclePlaybackRate() {
 function updateSpeedUI() {
   const rate = playbackRates[currentRateIdx];
   const pill = document.getElementById('speedPill');
-  if (pill) {
-    pill.textContent = `⚡ Tốc độ: ${rate}×`;
-  }
+  if (pill) pill.textContent = `⚡ Tốc độ: ${rate}×`;
 }
 
 function toggleAutoNext() {
@@ -1025,7 +1443,7 @@ function updateAutoNextUI() {
   }
 }
 
-// ── SLEEP TIMER (HẸN GIỜ) ──────────────────────────────────────────────────
+// ── SLEEP TIMER ───────────────────────────────────────────────────────────
 function openTimerModal() {
   document.getElementById('timerModalOverlay').classList.add('open');
   updateTimerModalBanner();
@@ -1127,36 +1545,39 @@ function cancelSleepTimer(showFeedback = true) {
   if (showFeedback) showToast('Đã huỷ hẹn giờ.');
 }
 
-function toggleSleepTimer() {
-  openTimerModal();
-}
-
 function updatePlayStateUI(isPlaying) {
-  document.getElementById('miniPlayBtn').textContent = isPlaying ? '⏸' : '▶';
-  document.getElementById('fullPlayBtn').textContent = isPlaying ? '⏸' : '▶';
+  const miniBtn = document.getElementById('miniPlayBtn');
+  const fullBtn = document.getElementById('fullPlayBtn');
+  const dockBtn = document.getElementById('readerDockPlayBtn');
+  
+  if (miniBtn) miniBtn.textContent = isPlaying ? '⏸' : '▶';
+  if (fullBtn) fullBtn.textContent = isPlaying ? '⏸' : '▶';
+  if (dockBtn) dockBtn.textContent = isPlaying ? '⏸' : '▶';
   
   const vinyl = document.getElementById('vinylArt');
-  if (isPlaying) vinyl.classList.add('playing');
-  else vinyl.classList.remove('playing');
+  if (vinyl) {
+    if (isPlaying) vinyl.classList.add('playing');
+    else vinyl.classList.remove('playing');
+  }
 }
 
 // ── AUDIO EVENTS ──────────────────────────────────────────────────────────
 function setupAudioEvents() {
   audio.addEventListener('play', () => {
     audio.playbackRate = playbackRates[currentRateIdx];
+    updatePlayStateUI(true);
+    renderChapters();
+  });
+
+  audio.addEventListener('pause', () => {
+    updatePlayStateUI(false);
+    renderChapters();
   });
 
   audio.addEventListener('timeupdate', () => {
     if (!audio.duration) return;
-    const pct = (audio.currentTime / audio.duration) * 100;
-    
-    document.getElementById('miniProgressBar').style.width = pct + '%';
-    document.getElementById('fullSeekBar').value = pct;
+    updateSeekUI(audio.currentTime, audio.duration);
 
-    document.getElementById('fullCurrentTime').textContent = formatSeconds(audio.currentTime);
-    document.getElementById('fullTotalTime').textContent = formatSeconds(audio.duration);
-
-    // Lưu ngầm trạng thái mỗi 10 giây khi đang phát để bảo vệ dữ liệu khi tắt app / khoá màn hình
     const now = Date.now();
     if (now - lastThrottledSave > 10000 && !audio.paused && audio.currentTime > 0) {
       lastThrottledSave = now;
@@ -1207,7 +1628,7 @@ function formatSeconds(sec) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// ── MEDIASESSION API (LOCK SCREEN CONTROLS) ────────────────────────────────
+// ── MEDIASESSION API ───────────────────────────────────────────────────────
 function setupMediaSession() {
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => togglePlay());
@@ -1237,7 +1658,6 @@ function jumpToChapter() {
     return;
   }
   
-  // Set filter phù hợp
   if (val >= 950 && currentFilter !== '950') {
     setFilter('950', document.querySelector('.tag-btn:nth-child(1)'));
   }
@@ -1263,32 +1683,268 @@ function closeFullPlayer() {
   document.getElementById('playerModal').classList.remove('open');
 }
 
+// ── CHẾ ĐỘ ĐỌC TRUYỆN BẰNG MẮT (READER MODE LOGIC) ──────────────────────
+async function openReader(num) {
+  if (!num) return;
+  currentReadingNum = num;
+  const modal = document.getElementById('readerModal');
+  modal.classList.add('open');
+
+  const ch = chapters.find(c => c.num === num);
+  const headerTitle = ch ? (ch.title || `Chương ${num}`) : `Chương ${num}`;
+  document.getElementById('readerHeaderTitle').textContent = headerTitle;
+  document.getElementById('readerBodyTitle').textContent = headerTitle;
+  document.getElementById('readerMetaBar').textContent = 'Đang tải nội dung...';
+  document.getElementById('readerBodyText').innerHTML = '<div class="reader-loading">⏳ Đang tải văn bản chương từ server...</div>';
+  document.getElementById('readerScrollArea').scrollTop = 0;
+  document.getElementById('readerProgressFill').style.width = '0%';
+
+  // Cập nhật trạng thái các nút
+  document.getElementById('readerPrevBtn').disabled = (num <= 1);
+  document.getElementById('readerNextBtn').disabled = (num >= 2045);
+
+  const listenBtn = document.getElementById('readerListenBtn');
+  if (ch && ch.audio_status === 'done') {
+    listenBtn.style.display = 'inline-flex';
+    listenBtn.innerHTML = (currentPlayingNum === num && !audio.paused) ? '⏸ Dừng Audio' : '🎧 Nghe Audio';
+  } else {
+    listenBtn.style.display = 'none';
+  }
+
+  // Cập nhật Reader Audio Dock
+  if (currentPlayingNum && audio.src) {
+    document.getElementById('readerAudioDock').style.display = 'flex';
+    const playingCh = chapters.find(c => c.num === currentPlayingNum);
+    document.getElementById('readerDockTitle').textContent = `Chương ${currentPlayingNum}: ${playingCh ? (playingCh.title || '') : ''}`;
+  } else {
+    document.getElementById('readerAudioDock').style.display = 'none';
+  }
+
+  try {
+    const res = await fetch(`/api/chapter/${num}/content`);
+    if (!res.ok) throw new Error('Không thể tải nội dung');
+    const data = await res.json();
+    
+    document.getElementById('readerHeaderTitle').textContent = data.title || `Chương ${num}`;
+    document.getElementById('readerBodyTitle').textContent = data.title || `Chương ${num}`;
+    document.getElementById('readerMetaBar').textContent = `${(data.word_count || 0).toLocaleString()} chữ • Bản dịch chuẩn xianxia`;
+
+    // Format paragraphs
+    const lines = (data.content || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const paragraphsHtml = lines.map(line => `<p>${escapeHtml(line)}</p>`).join('');
+    document.getElementById('readerBodyText').innerHTML = paragraphsHtml || '<p>Nội dung chương trống.</p>';
+  } catch (err) {
+    document.getElementById('readerBodyText').innerHTML = `<div class="reader-loading" style="color:var(--error)">⚠️ Lỗi khi tải nội dung: ${err.message}. Vui lòng thử lại!</div>`;
+  }
+}
+
+function closeReader() {
+  document.getElementById('readerModal').classList.remove('open');
+  document.getElementById('readerSettingsPanel').style.display = 'none';
+}
+
+function readerGoPrev() {
+  if (currentReadingNum && currentReadingNum > 1) {
+    openReader(currentReadingNum - 1);
+  }
+}
+
+function readerGoNext() {
+  if (currentReadingNum && currentReadingNum < 2045) {
+    openReader(currentReadingNum + 1);
+  }
+}
+
+function readerPlayAudioCurrent() {
+  if (!currentReadingNum) return;
+  const ch = chapters.find(c => c.num === currentReadingNum);
+  if (!ch) return;
+  if (ch.audio_status === 'done') {
+    if (currentPlayingNum === currentReadingNum && audio.src) {
+      togglePlay();
+    } else {
+      playChapter(currentReadingNum, 0);
+    }
+    const listenBtn = document.getElementById('readerListenBtn');
+    if (listenBtn) {
+      listenBtn.innerHTML = !audio.paused ? '⏸ Dừng Audio' : '🎧 Nghe Audio';
+    }
+  } else {
+    showToast(`Chương ${currentReadingNum} chưa có audio!`);
+  }
+}
+
+function handleReaderScroll() {
+  const el = document.getElementById('readerScrollArea');
+  if (!el) return;
+  const total = el.scrollHeight - el.clientHeight;
+  const pct = total > 0 ? Math.min(100, Math.max(0, (el.scrollTop / total) * 100)) : 0;
+  document.getElementById('readerProgressFill').style.width = pct + '%';
+}
+
+function toggleReaderSettings() {
+  const p = document.getElementById('readerSettingsPanel');
+  p.style.display = (p.style.display === 'none' || !p.style.display) ? 'flex' : 'none';
+}
+
+function setReaderTheme(theme, btnEl) {
+  readerTheme = theme;
+  localStorage.setItem('reader_theme', theme);
+  const modal = document.getElementById('readerModal');
+  modal.className = `reader-modal-overlay open theme-${theme}`;
+  
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  else {
+    const activeBtn = document.querySelector(`.theme-btn-${theme}`);
+    if (activeBtn) activeBtn.classList.add('active');
+  }
+}
+
+function changeFontSize(delta) {
+  readerFontSize = Math.min(30, Math.max(14, readerFontSize + delta * 2));
+  localStorage.setItem('reader_font_size', readerFontSize);
+  applyReaderPreferences();
+}
+
+function toggleFontFamily() {
+  readerFontFamily = (readerFontFamily === 'serif') ? 'sans' : 'serif';
+  localStorage.setItem('reader_font_family', readerFontFamily);
+  applyReaderPreferences();
+}
+
+function applyReaderPreferences() {
+  const modal = document.getElementById('readerModal');
+  if (modal) {
+    modal.className = `reader-modal-overlay theme-${readerTheme}`;
+  }
+  document.documentElement.style.setProperty('--r-font-size', readerFontSize + 'px');
+  
+  const fontFam = (readerFontFamily === 'serif') 
+    ? "'Merriweather', Georgia, 'Times New Roman', serif" 
+    : "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  document.documentElement.style.setProperty('--r-font-family', fontFam);
+
+  const fontText = document.getElementById('fontSizeText');
+  if (fontText) fontText.textContent = `${readerFontSize}px`;
+
+  const fontFamBtn = document.getElementById('fontFamilyBtn');
+  if (fontFamBtn) {
+    fontFamBtn.textContent = (readerFontFamily === 'serif') ? 'Serif (Có chân)' : 'Sans-Serif (Hiện đại)';
+  }
+
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.classList.contains(`theme-btn-${readerTheme}`));
+  });
+}
+
+// ── CONVERTING QUEUE MODAL LOGIC ──────────────────────────────────────────
+function openConvertingModal() {
+  const overlay = document.getElementById('convertingModalOverlay');
+  overlay.classList.add('open');
+  renderConvertingQueue();
+}
+
+function closeConvertingModal() {
+  document.getElementById('convertingModalOverlay').classList.remove('open');
+}
+
+function renderConvertingQueue() {
+  const listEl = document.getElementById('convertingQueueList');
+  if (!listEl) return;
+
+  const convertingList = chapters.filter(c => c.audio_status === 'converting');
+  const waitingList = chapters.filter(c => c.num >= 935 && c.audio_status !== 'done' && c.audio_status !== 'converting')
+                              .sort((a,b) => a.num - b.num)
+                              .slice(0, 20);
+
+  let html = '';
+
+  if (convertingList.length > 0) {
+    html += `<div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:8px">⚡ ĐANG XỬ LÝ (${convertingList.length} chương):</div>`;
+    convertingList.forEach(c => {
+      html += `
+        <div class="queue-item active">
+          <div class="queue-left">
+            <div class="queue-title">Chương ${c.num}: ${c.title || ''}</div>
+            <div class="queue-sub" style="color:#fde68a">⏳ Đang tổng hợp giọng đọc Hoài My trên PC...</div>
+          </div>
+          <button class="btn-action btn-read" onclick="closeConvertingModal(); openReader(${c.num})">📖 Đọc trước</button>
+        </div>
+      `;
+    });
+  } else {
+    html += `<div style="padding:10px;background:rgba(255,255,255,0.03);border-radius:10px;font-size:12px;color:var(--text-muted);margin-bottom:12px">Hiện tại không có chương nào đang chạy dở.</div>`;
+  }
+
+  if (waitingList.length > 0) {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin:14px 0 8px">📋 HÀNG ĐỢI KẾ TIẾP (Tuần tự tăng dần):</div>`;
+    waitingList.forEach((c, idx) => {
+      html += `
+        <div class="queue-item">
+          <div class="queue-left">
+            <div class="queue-title">#${idx + 1}. Chương ${c.num}: ${c.title || ''}</div>
+            <div class="queue-sub">${c.word_count ? c.word_count.toLocaleString() + ' chữ &bull; ' : ''}Chờ máy tính PC convert</div>
+          </div>
+          <button class="btn-action btn-read" onclick="closeConvertingModal(); openReader(${c.num})">📖 Đọc</button>
+        </div>
+      `;
+    });
+  }
+
+  listEl.innerHTML = html;
+}
+
 // ── AUTO REFRESH STATS ────────────────────────────────────────────────────
 function startAutoRefresh() {
   setInterval(async () => {
     try {
-      const res = await fetch('/api/chapters?limit=2000&offset=0');
+      const res = await fetch('/api/chapters?limit=2500&offset=0');
       const data = await res.json();
       if (data && data.chapters) {
         chapters = data.chapters;
         updateStats();
-        // Cập nhật ngầm danh sách nếu có chương mới xong
-        renderChapters();
+        // Cập nhật ngầm các badge nếu có chương vừa convert xong
+        const cards = document.querySelectorAll('.chapter-card');
+        if (cards.length > 0) {
+          chapters.forEach(c => {
+            const card = document.getElementById(`chap-${c.num}`);
+            if (card) {
+              const playBtn = card.querySelector('.btn-play');
+              if (playBtn) {
+                const isPlaying = c.num === currentPlayingNum;
+                const isDone = c.audio_status === 'done';
+                const isConverting = c.audio_status === 'converting';
+                if (isPlaying && !audio.paused) {
+                  playBtn.textContent = '⏸ Dừng';
+                  playBtn.className = 'btn-action btn-play is-playing';
+                } else if (isDone) {
+                  playBtn.textContent = '▶ Nghe';
+                  playBtn.className = 'btn-action btn-play';
+                } else if (isConverting) {
+                  playBtn.textContent = '⏳ Convert';
+                  playBtn.className = 'btn-action btn-play';
+                } else {
+                  playBtn.textContent = '🎧 Chờ';
+                  playBtn.className = 'btn-action btn-play disabled';
+                }
+              }
+            }
+          });
+        }
       }
     } catch (e) {}
-  }, 5000);
+  }, 6000);
 }
 
-// ── SECRET REMOTE 4G ACCESS (TÍNH NĂNG ẨN) ─────────────────────────────────
+// ── SECRET REMOTE 4G ACCESS ────────────────────────────────────────────────
 let secretTapCount = 0;
 let secretTapTimer = null;
 
 function handleSecretTap() {
   secretTapCount++;
   clearTimeout(secretTapTimer);
-  secretTapTimer = setTimeout(() => {
-    secretTapCount = 0;
-  }, 1500);
+  secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1500);
 
   if (secretTapCount >= 3) {
     secretTapCount = 0;
@@ -1298,24 +1954,9 @@ function handleSecretTap() {
 
 async function openSecretRemoteModal() {
   document.getElementById('secretRemoteModalOverlay').classList.add('open');
-  try {
-    const res = await fetch('/api/remote-info');
-    if (res.ok) {
-      const data = await res.json();
-      const pubUrl = data.public_url || window.location.origin;
-      document.getElementById('remotePublicUrlInput').value = pubUrl;
-      const linkEl = document.getElementById('remoteLocalUrlLink');
-      if (linkEl && data.local_url) {
-        linkEl.href = data.local_url;
-        linkEl.textContent = data.local_url;
-      }
-      document.getElementById('remoteQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pubUrl)}`;
-    }
-  } catch (e) {
-    const origin = window.location.origin;
-    document.getElementById('remotePublicUrlInput').value = origin;
-    document.getElementById('remoteQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(origin)}`;
-  }
+  const pubUrl = window.location.origin;
+  document.getElementById('remotePublicUrlInput').value = pubUrl;
+  document.getElementById('remoteQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pubUrl)}`;
 }
 
 function closeSecretRemoteModal() {
@@ -1327,21 +1968,26 @@ function copyRemoteUrl() {
   input.select();
   input.setSelectionRange(0, 99999);
   navigator.clipboard.writeText(input.value).then(() => {
-    showToast('📋 Đã sao chép link 4G vào bộ nhớ tạm!');
+    showToast('📋 Đã sao chép link truy cập vào bộ nhớ tạm!');
   }).catch(() => {
     document.execCommand('copy');
-    showToast('📋 Đã sao chép link 4G!');
+    showToast('📋 Đã sao chép link!');
   });
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, duration = 2800) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 </script>
 </body>

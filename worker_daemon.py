@@ -44,7 +44,7 @@ TARGET_VOICE = "vi-VN-HoaiMyNeural"
 FALLBACK_VOICE = "vi-VN-NamMinhNeural"
 MIN_VALID_AUDIO_BYTES = 3.0 * 1024 * 1024  # 3.0 MB tối thiểu cho 1 chương hoàn chỉnh (~15,000 ký tự)
 
-PRIORITY_LIST = [1041, 1042, 1043, 1044, 1082]
+PRIORITY_LIST = [1098]  # Đảm bảo 1098 được bù ngay để chuỗi 935-1100+ hoàn toàn liền mạch không tì vết
 
 def clean_text_for_tts(text: str) -> str:
     if not text:
@@ -78,7 +78,8 @@ def clean_text_for_tts(text: str) -> str:
         (r'(?i)\bnổ tung\b', 'tan rã hoàn toàn'),
         (r'(?i)\bThấy tình cảnh này\b', 'Thấy tình cảnh như vậy'),
         (r'(?i)\bThấy vậy\b', 'Nhìn thấy vậy'),
-        (r'(?i)\bSau một khắc\b', 'Sau một khắc'),
+        (r'(?i)\bSau một khắc\b', 'Một lát sau'),
+        (r'(?i)\bTư Không\b', 'Tư Không, '),
         (r'(?i)\bDù sao\b', 'Dù sao thì'),
         (r'(?i)\bCho nên\b', 'Cho nên'),
         (r'(?i)\bGiống vậy\b', 'Cũng giống như vậy'),
