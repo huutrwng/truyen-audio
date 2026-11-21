@@ -131,6 +131,27 @@ def sync_all_audio(audio_dir: Path) -> bool:
         logger.error(f"✗ Loi dong bo folder audio: {e}")
         return False
 
+async def get_cloud_audio_filenames() -> list[str]:
+    """Lay danh sach tat ca cac file audio hien co tren Cloud Storage qua API public."""
+    api_url = f"https://huggingface.co/api/datasets/{REPO_ID}"
+    try:
+        timeout = aiohttp.ClientTimeout(total=15)
+        headers = {"User-Agent": "Mozilla/5.0"}
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+            async with session.get(api_url) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    siblings = data.get("siblings", [])
+                    filenames = [
+                        s["rfilename"].replace("audio/", "")
+                        for s in siblings
+                        if s.get("rfilename", "").startswith("audio/") and s.get("rfilename", "").endswith(".mp3")
+                    ]
+                    return filenames
+    except Exception as e:
+        logger.warning(f"Khong the lay danh sach file tu Cloud: {e}")
+    return []
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     base_dir = Path(__file__).parent

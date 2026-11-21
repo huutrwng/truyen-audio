@@ -128,16 +128,45 @@ async def conversion_worker():
 
 # ─── App Lifespan ─────────────────────────────────────────────────────────────
 worker_task = None
+cloud_sync_task = None
+
+async def cloud_sync_worker():
+    """Định kỳ quét Cloud Hugging Face để tự động đồng bộ trạng thái audio_status='done' vào DB."""
+    await asyncio.sleep(3)
+    while True:
+        try:
+            cloud_files = await cloud_storage.get_cloud_audio_filenames()
+            if cloud_files:
+                import sqlite3, re
+                conn = sqlite3.connect(str(BASE_DIR / "data" / "chapters.db"))
+                c = conn.cursor()
+                updated_count = 0
+                for fname in cloud_files:
+                    m = re.search(r'chapter_(\d+)\.mp3', fname)
+                    if m:
+                        num = int(m.group(1))
+                        c.execute("UPDATE chapters SET audio_status = 'done', audio_path = ? WHERE num = ? AND audio_status != 'done'", (f"audio/{fname}", num))
+                        if c.rowcount > 0:
+                            updated_count += 1
+                if updated_count > 0:
+                    conn.commit()
+                    conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+                    logger.info(f"✓ Đã đồng bộ {updated_count} chương mới từ Cloud Hugging Face vào database!")
+                conn.close()
+        except Exception as e:
+            logger.warning(f"Lỗi khi đồng bộ Cloud audio status: {e}")
+        await asyncio.sleep(180)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global worker_task
+    global worker_task, cloud_sync_task
     # Startup
     await db.init_db()
     logger.info("Database initialized")
 
-    # Start background worker
+    # Start background workers
     worker_task = asyncio.create_task(conversion_worker())
+    cloud_sync_task = asyncio.create_task(cloud_sync_worker())
     logger.info("🚀 Truyen Audio Server started!")
     logger.info(f"   Static: {STATIC_DIR}")
     logger.info(f"   Audio:  {AUDIO_DIR}")
@@ -149,6 +178,12 @@ async def lifespan(app: FastAPI):
         worker_task.cancel()
         try:
             await worker_task
+        except asyncio.CancelledError:
+            pass
+    if cloud_sync_task:
+        cloud_sync_task.cancel()
+        try:
+            await cloud_sync_task
         except asyncio.CancelledError:
             pass
     await scraper.close()
